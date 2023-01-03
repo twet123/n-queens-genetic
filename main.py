@@ -91,9 +91,9 @@ def crossover(first, second):
             continue
         ancestor[j]["y"] = second[i]["y"]
         j += 1
-    if np.random.random() > 0.8:
+    if np.random.random() > 0.7:
         ancestor = mutation(ancestor)
-    if np.random.random() > 0.8:
+    if np.random.random() > 0.7:
         ancestor2 = mutation(ancestor2)
     return ancestor, ancestor2
 
@@ -122,9 +122,10 @@ def genetic(n, population_n=100):
     # sortiranje po prilagodjenosti
     while True:
         j += 1
+        print("\r " + str(j), end="")
         for i in range(0, population_n, 2):
             population_tmp = np.array(sorted(population, key=lambda ind: fitness_score(ind) * np.random.random()))
-            if fitness_score(population_tmp[0]) == 0 or j == 50:
+            if fitness_score(population_tmp[0]) == 0:  # or j == 50:
                 return population_tmp[0], j
             ancestors[i], ancestors[i+1] = crossover(population_tmp[0], population_tmp[1])
         # population = ancestors
@@ -155,7 +156,7 @@ def genetic(n, population_n=100):
 def main():
     print("Unesite n")
     n = int(input(">> "))
-    queens_array, i = genetic(n)
+    queens_array, i = genetic(n, 50)
     print(queens_array, i)
     graph.draw(n, queens_array)
 
