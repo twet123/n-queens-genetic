@@ -1,4 +1,5 @@
 import numpy as np
+import draw
 
 
 def init(n, population_n):
@@ -102,6 +103,8 @@ def main():
 
     print("Broj generacija", generations)
     print("Resenje", optimal_solution)
+
+    draw.drawChessTable(optimal_solution, n)
 
 
 if __name__ == "__main__":
