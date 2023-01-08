@@ -2,13 +2,11 @@ import numpy as np
 
 
 def init(n, population_n):
-    dtype = np.dtype([("x", np.uint8), ("y", np.uint8)])
-    population = np.zeros((population_n, n), dtype)
+    population = np.zeros((population_n, n))
 
     for i in range(population_n):
         for j in range(n):
-            population[i][j]["x"] = np.random.randint(0, n)
-            population[i][j]["y"] = np.random.randint(0, n)
+            population[i][j] = np.random.randint(0, n)
 
     return population
 
@@ -22,21 +20,20 @@ def fitness_score(individual):
                 continue
 
             # napadaju se u sledecim slucajevima
-            # 1 - nalaze se u istoj koloni (ista im je prva koordinata)
-            # 2 - nalaze se u istom redu (ista im je druga koordinata)
-            # 3 - nalaze se u na istoj dijagonali (gledamo obe dijagonale)
+            # 1 - nalaze se u istoj koloni (ista im je druga koordinata)
+            # 2 - nalaze se na istoj dijagonali (gledamo obe dijagonale)
             # (apsolutna vrednost razlike izmedju prvih koordinata prvog i drugog elementa
-            # mora biti jednaka sa apsolutnom vrednoscu razlike izmedju drugih koordianata prvog i drugog elementa)
+            # mora biti jednaka sa apsolutnom vrednosti razlike izmedju drugih koordinata prvog i drugog elementa)
 
-            if individual[i]["x"] == individual[j]["x"]:
+            x1 = i
+            x2 = j
+            y1 = individual[i]
+            y2 = individual[j]
+
+            if y1 == y2:
                 res += 1
 
-            elif individual[i]["y"] == individual[j]["y"]:
-                res += 1
-
-            elif np.abs(int(individual[i]["x"]) - int(individual[j]["x"])) == np.abs(
-                int(individual[i]["y"]) - int(individual[j]["y"])
-            ):
+            elif np.abs(x1 - x2) == np.abs(y1 - y2):
                 res += 1
 
     # na ovaj nacin brojimo svako napadanje dvaput pa delimo konacnan rezultat sa 2
@@ -47,33 +44,30 @@ def crossover(n, parent1, parent2):
     # nasumicni pivoting point
     crossover_point = np.random.randint(0, n)
 
-    child1 = np.concatenate((parent1[:crossover_point], parent2[crossover_point:]))
-    child2 = np.concatenate((parent2[:crossover_point], parent1[crossover_point:]))
+    child1 = np.concatenate((parent1[crossover_point:], parent2[:crossover_point]))
+    child2 = np.concatenate((parent1[:crossover_point], parent2[crossover_point:]))
 
     # mutacija - 70% sanse za random promenu u detetu
     if np.random.random() > 0.3:
         mutation_point = np.random.randint(0, n)
-        child1[mutation_point]["x"] = np.random.randint(0, n)
-        child1[mutation_point]["y"] = np.random.randint(0, n)
+        child1[mutation_point] = np.random.randint(0, n)
 
     if np.random.random() > 0.3:
         mutation_point = np.random.randint(0, n)
-        child2[mutation_point]["x"] = np.random.randint(0, n)
-        child2[mutation_point]["y"] = np.random.randint(0, n)
+        child2[mutation_point] = np.random.randint(0, n)
 
     return child1, child2
 
 
 def genetic(n, population_n=100):
     generation = 0
-    dtype = np.dtype([("x", np.uint8), ("y", np.uint8)])
 
     # inicijalizacija - kodiranje jedinki
     population = init(n, population_n)
 
     while True:
         # pravljenje dece - ukrstanje
-        children = np.zeros((population_n, n), dtype)
+        children = np.zeros((population_n, n))
         for i in range(int(population_n / 2)):
             # sortiranje po prilagodjenosti - selekcija
             population = np.array(sorted(population, key=lambda ind: fitness_score(ind) * np.random.random()))
