@@ -62,11 +62,13 @@ def crossover(n, parent1, parent2):
 
 def genetic(n, population_n=100):
     generation = 0
+    counter = 0
 
     # inicijalizacija - kodiranje jedinki
     population = init(n, population_n)
 
     while True:
+        counter += 1
         # pravljenje dece - ukrstanje
         children = np.zeros((population_n, n))
         for i in range(int(population_n / 2)):
@@ -88,8 +90,9 @@ def genetic(n, population_n=100):
             if fitness_score(children[len(children) - i - 1]) > fitness_score(population[i]):
                 children[len(children) - i - 1], population[i] = population[i], children[len(children) - i - 1]
 
-        print(fitness_score(children[0]))
+        print("\r" + str(counter) + ". " + str(fitness_score(children[0])), end="")
         if fitness_score(children[0]) == 0:
+            print()
             return children[0], generation
 
         population = children
@@ -104,7 +107,7 @@ def main():
     print("Broj generacija", generations)
     print("Resenje", optimal_solution)
 
-    draw.drawChessTable(optimal_solution, n)
+    draw.draw(optimal_solution, n)
 
 
 if __name__ == "__main__":

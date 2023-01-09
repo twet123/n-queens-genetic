@@ -1,48 +1,20 @@
-import turtle
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 
 
-def drawChessTable(queens, n):
-    sc = turtle.Screen()
-    pen = turtle.Turtle()
+def draw(queens, n):
+    dx, dy = 0.015, 0.05
+    x = np.arange(-n / 2, n / 2, dx)
+    y = np.arange(-n / 2, n / 2, dy)
+    np.meshgrid(x, y)
+    res = np.add.outer(range(n), range(n)) % 2
+    plt.imshow(res, cmap="binary_r")
 
-    sc.setup(800, 800)
+    for i in range(len(queens)):
+        c1 = plt.Circle((i, queens[i]), 0.25, color="red")
+        plt.gca().add_patch(c1)
 
-    startX = -300
-    startY = -200
-
-    pen.speed("fastest")
-
-    dimension = 600 / n
-
-    pen.color("black")
-
-    counter = 0
-    for i in range(n):
-        queen = queens[n - i - 1]
-        for j in range(n):
-            pen.up()
-            pen.setposition(startX, startY)
-            pen.down()
-
-            if j == queen:
-                pen.color("red")
-            else:
-                pen.color("black")
-
-            if (counter % 2 == 0 and i % 2 == 0) or (counter % 2 == 1 and i % 2 == 1) or j == queen:
-                pen.begin_fill()
-
-            for k in range(4):
-                pen.forward(dimension)
-                pen.right(90)
-
-            if (counter % 2 == 0 and i % 2 == 0) or (counter % 2 == 1 and i % 2 == 1) or j == queen:
-                pen.end_fill()
-
-            startX += dimension
-            counter += 1
-
-        startX = -300
-        startY += dimension
-
-    turtle.getscreen()._root.mainloop()
+    plt.xticks([])
+    plt.yticks([])
+    plt.show()
