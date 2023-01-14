@@ -3,20 +3,16 @@ import draw
 
 
 def init(n, population_n):
-    population = np.zeros((population_n, n))
-
-    for i in range(population_n):
-        for j in range(n):
-            population[i][j] = np.random.randint(0, n)
+    population = [[np.random.randint(0, n) for j in range(n)] for i in range(population_n)]
 
     return population
 
 
-def fitness_score(individual):
+def fitness_score(n, individual):
     # fitness se racuna kao broj kraljica koje se napadaju na datoj tabli (svaka jedinka predstavlja jednu tablu)
     res = 0
-    for i in range(len(individual)):
-        for j in range(len(individual)):
+    for i in range(n):
+        for j in range(n):
             if i == j:
                 continue
 
@@ -34,7 +30,7 @@ def fitness_score(individual):
             if y1 == y2:
                 res += 1
 
-            elif np.abs(x1 - x2) == np.abs(y1 - y2):
+            elif abs(x1 - x2) == abs(y1 - y2):
                 res += 1
 
     # na ovaj nacin brojimo svako napadanje dvaput pa delimo konacnan rezultat sa 2
@@ -45,8 +41,8 @@ def crossover(n, parent1, parent2):
     # nasumicni pivoting point
     crossover_point = np.random.randint(0, n)
 
-    child1 = np.concatenate((parent1[crossover_point:], parent2[:crossover_point]))
-    child2 = np.concatenate((parent1[:crossover_point], parent2[crossover_point:]))
+    child1 = parent1[:crossover_point] + parent2[crossover_point:]
+    child2 = parent2[:crossover_point] + parent1[crossover_point:]
 
     # mutacija - 70% sanse za random promenu u detetu
     if np.random.random() > 0.3:
@@ -66,34 +62,42 @@ def genetic(n, population_n=100):
 
     # inicijalizacija - kodiranje jedinki
     population = init(n, population_n)
+    # skladistimo fitness_score negde pa zip
+    population_scores = list(map(lambda ind: fitness_score(n, ind), population))
+    population = list(zip(population, population_scores))
 
     while True:
         counter += 1
         # pravljenje dece - ukrstanje
-        children = np.zeros((population_n, n))
+        children = []
         for i in range(int(population_n / 2)):
             # sortiranje po prilagodjenosti - selekcija
-            population = np.array(sorted(population, key=lambda ind: fitness_score(ind) * np.random.random()))
+            population = sorted(population, key=lambda ind: ind[1] * np.random.random())
 
-            child1, child2 = crossover(n, population[0], population[1])
-            children[i * 2] = child1
-            children[i * 2 + 1] = child2
+            child1, child2 = crossover(n, population[0][0], population[1][0])
+            children.append(child1)
+            children.append(child2)
 
         generation += 1
 
         # pustamo 5% najboljih roditelja da prezive - elitizam
         elitism_deg = int(population_n * 0.05)
-        children = np.array(sorted(children, key=lambda ind: fitness_score(ind)))
-        population = np.array(sorted(population, key=lambda ind: fitness_score(ind)))
+
+        children_scores = list(map(lambda ind: fitness_score(n, ind), children))
+        children = list(zip(children, children_scores))
+        children = sorted(children, key=lambda ind: ind[1])
+        population = sorted(population, key=lambda ind: ind[1])
 
         for i in range(elitism_deg):
-            if fitness_score(children[len(children) - i - 1]) > fitness_score(population[i]):
+            if children[len(children) - i - 1][1] > population[i][1]:
                 children[len(children) - i - 1], population[i] = population[i], children[len(children) - i - 1]
 
-        print("\r" + str(counter) + ". " + str(fitness_score(children[0])), end="")
-        if fitness_score(children[0]) == 0:
+        children = sorted(children, key=lambda ind: ind[1])
+        best_child = children[0][1]
+        print("\r" + str(counter) + ". " + str(best_child), end="")
+        if best_child == 0:
             print()
-            return children[0], generation
+            return children[0][0], generation
 
         population = children
 
